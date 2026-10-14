@@ -481,7 +481,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   });
 
   // ---------- WebGL
-  var trophy, orbit, gl = false, renderer, scene, camera, points, pMat, frames = [], feature, raycaster, mouseN = { x: 0, y: 0 }, pushOn = false, hovered = null;
+  var trophy, trophyLater, orbit, gl = false, renderer, scene, camera, points, pMat, frames = [], feature, raycaster, mouseN = { x: 0, y: 0 }, pushOn = false, hovered = null;
   var N = small ? 6500 : 15000;
   try {
     if (!window.THREE) throw new Error('three missing');
@@ -674,7 +674,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     feature = makeFrame(WORK[0], 0, small ? 0.8 : 1.9);
     feature.position.set(small ? 0 : 1.5, small ? 1.35 : 0, FEATZ);
     scene.add(feature); frames.push(feature);
-    buildTrophy();
+    trophyLater = buildTrophy;
   }
 
   // ---------- The MarCom trophy: faceted gold figure with a raised torch on a tapered white base
@@ -1042,6 +1042,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
       apTo(apFull(), 1.8, 'expo.inOut');
     } else { apUI.hidden = true; drawAp(apFull()); }
     reveals();
+    if (trophyLater) setTimeout(function () { var b = trophyLater; trophyLater = null; b(); }, 1500);
   }
   function boot() {
     if (booted) return; booted = true; target = 1;
@@ -1051,8 +1052,14 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   var minWait = new Promise(function (r) { setTimeout(r, reduce ? 100 : 1800); });
   var fontWait = document.fonts && document.fonts.load ? Promise.all(fontList.map(function (f, i) { return document.fonts.load(f, ['Պետրոս', 'بيدروس', 'PEDROS', '01'][i]); })) : Promise.resolve();
   Promise.all([minWait, Promise.race([fontWait, new Promise(function (r) { setTimeout(r, 3500); })])]).then(function () {
-    if (gl) frames.forEach(function (f) { var w = f.userData.w, i = f.userData.i; f.material.uniforms.uTex.value.dispose(); f.material.uniforms.uTex.value = poster(w, i); });
-    boot();
+    // Rebuild the frame textures one per animation frame, then boot, so no single frame holds the main thread (that was the stall near f/2.8).
+    var todo = gl ? frames.slice() : [];
+    (function step() {
+      var f = todo.shift();
+      if (!f) { requestAnimationFrame(boot); return; }
+      var w = f.userData.w, i = f.userData.i; f.material.uniforms.uTex.value.dispose(); f.material.uniforms.uTex.value = poster(w, i);
+      requestAnimationFrame(step);
+    })();
   }, boot);
   setTimeout(boot, 5000);
 
