@@ -166,7 +166,7 @@ main a, main button { pointer-events: auto; }
 .contact-wrap { min-height: 100vh; display: grid; align-content: end; gap: clamp(28px, 5vw, 56px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 28px); }
 .contact-wrap .big { margin: 0; font-weight: 300; font-stretch: 115%; font-size: clamp(2.2rem, 6.4vw, 6rem); line-height: .98; text-wrap: balance; }
 .contact-wrap .big b { font-weight: 800; font-stretch: 62%; text-transform: uppercase; }
-.chans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.chans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
 .chan { min-width: 0; display: grid; gap: 8px; align-content: start; border-top: 1px solid var(--rule); padding-top: 12px; }
 .chan .v { font-size: 1.05rem; overflow-wrap: anywhere; text-decoration: none; }
 .chan a.v:hover { color: var(--gold); }
@@ -334,6 +334,10 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     <div class="contact-wrap">
       <p class="big">Have a story with <b>people</b> in it? Let’s shoot it.</p>
       <div class="chans">
+        <div class="chan">
+          <span class="mono dim">Email</span>
+          <a class="v" href="mailto:pedros.temizian@gmail.com">pedros.temizian@gmail.com</a>
+        </div>
         <div class="chan">
           <span class="mono dim">Instagram</span>
           <a class="v" href="https://www.instagram.com/pedroskt/" target="_blank" rel="noopener">@pedroskt ↗</a>
