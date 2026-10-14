@@ -40,7 +40,6 @@ button { font: inherit; color: inherit; }
 ::selection { background: var(--gold); color: var(--black); }
 .mono { font-family: var(--f-mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
 .dim { color: var(--dim); }
-.ph { display: inline-block; font-family: var(--f-mono); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); border: 1px dashed rgba(210, 167, 100, .6); padding: 1px 6px; vertical-align: middle; white-space: nowrap; }
 
 /* Stage */
 #gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
@@ -140,6 +139,9 @@ main a, main button { pointer-events: auto; }
 .award-cap .ln { margin: 0; font-weight: 300; font-stretch: 112%; font-size: clamp(1.1rem, 1.9vw, 1.6rem); line-height: 1.25; }
 .award-cap .ln b { font-weight: 600; font-stretch: 90%; }
 .award-cap .rule { width: 64px; height: 1px; background: var(--gold); }
+.totop { position: fixed; z-index: 45; right: var(--gr); bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); padding: 10px 14px; border: 1px solid var(--paper); background: rgba(4,4,3,.55); color: var(--paper); text-decoration: none; opacity: 0; visibility: hidden; transition: opacity .4s var(--ease), visibility .4s; }
+.totop.on { opacity: 1; visibility: visible; }
+.totop:hover { background: var(--paper); color: var(--black); }
 /* Legibility: the dunes and sun stay visible behind the ending, but a dark veil keeps About and Contact readable */
 #about { background: linear-gradient(180deg, rgba(7,6,5,0) 0, rgba(7,6,5,.88) 16vh, rgba(7,6,5,.88) 100%); }
 #contact { background: linear-gradient(180deg, rgba(7,6,5,.88) 0, rgba(7,6,5,.8) 45%, rgba(7,6,5,.62) 100%); }
@@ -164,12 +166,10 @@ main a, main button { pointer-events: auto; }
 .contact-wrap { min-height: 100vh; display: grid; align-content: end; gap: clamp(28px, 5vw, 56px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 28px); }
 .contact-wrap .big { margin: 0; font-weight: 300; font-stretch: 115%; font-size: clamp(2.2rem, 6.4vw, 6rem); line-height: .98; text-wrap: balance; }
 .contact-wrap .big b { font-weight: 800; font-stretch: 62%; text-transform: uppercase; }
-.chans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.chans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .chan { min-width: 0; display: grid; gap: 8px; align-content: start; border-top: 1px solid var(--rule); padding-top: 12px; }
 .chan .v { font-size: 1.05rem; overflow-wrap: anywhere; text-decoration: none; }
 .chan a.v:hover { color: var(--gold); }
-.copy { justify-self: start; background: none; border: 1px solid var(--rule); padding: 4px 10px; cursor: pointer; color: var(--dim); }
-.copy:hover { color: var(--paper); border-color: var(--paper); }
 .foot { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--rule); padding-top: 14px; }
 .foot a { text-decoration: none; }
 
@@ -255,6 +255,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   </nav>
 </header>
 <div class="strip" aria-hidden="true"><i id="playhead"></i></div>
+<a class="totop mono" id="totop" href="#intro" data-go="intro" aria-label="Back to top">↑ Top</a>
 <div class="cue mono dim" id="cue"><span class="line"></span><span>Scroll to roll</span></div>
 
 <main>
@@ -312,7 +313,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
       <div>
         <p class="lead">Grew up in the Middle East. Works in <em>three languages</em>. Looks for the people inside every brief.</p>
         <p>I’m a director based in Dubai, making commercials, teasers and documentary films since 2005. Arabic, English and Armenian are all working languages on my sets, which usually means everyone in front of the camera gets to speak in their own.</p>
-        <p>Whether it is thirty seconds or a full series, the scale of a brand matters less to me than the faces behind it. That is what the CEER series was about, and it is what I bring to every job. <span class="ph">Draft copy, needs approval</span></p>
+        <p>Whether it is thirty seconds or a full series, the scale of a brand matters less to me than the faces behind it. That is what the CEER series was about, and it is what I bring to every job.</p>
       </div>
       <ul class="facts mono dim">
         <li><span>Based in</span><span>Dubai, United Arab Emirates</span></li>
@@ -334,23 +335,12 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
       <p class="big">Have a story with <b>people</b> in it? Let’s shoot it.</p>
       <div class="chans">
         <div class="chan">
-          <span class="mono dim">Email</span>
-          <span class="v" id="email">hello@pedrostemizian.com</span>
-          <button class="copy mono" type="button" id="copy-email">Copy address</button>
-          <span class="ph" style="justify-self:start">Placeholder</span>
-        </div>
-        <div class="chan">
           <span class="mono dim">Instagram</span>
           <a class="v" href="https://www.instagram.com/pedroskt/" target="_blank" rel="noopener">@pedroskt ↗</a>
         </div>
         <div class="chan">
           <span class="mono dim">Vimeo</span>
           <a class="v" href="https://vimeo.com/pedroskevorktemizian" target="_blank" rel="noopener">pedroskevorktemizian ↗</a>
-        </div>
-        <div class="chan">
-          <span class="mono dim">Representation</span>
-          <span class="v">Production company</span>
-          <span class="ph" style="justify-self:start">Placeholder</span>
         </div>
       </div>
       <div class="foot mono dim">
@@ -520,7 +510,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     x.fillStyle = '#000'; x.fillRect(0, 0, 1024, 38); x.fillRect(0, 538, 1024, 38);
     x.fillStyle = 'rgba(239,231,220,.75)'; x.font = '400 17px "JetBrains Mono", monospace';
     x.fillText(pad(i + 1) + ' / ' + pad(WORK.length) + '   ' + w.kind.toUpperCase(), 40, 25);
-    x.textAlign = 'right'; x.fillText(w.ph ? 'PLACEHOLDER' : (w.gold ? 'GOLD · MARCOM' : 'PEDROS TEMIZIAN'), 984, 25);
+    x.textAlign = 'right'; x.fillText(w.gold ? 'GOLD · MARCOM' : 'PEDROS TEMIZIAN', 984, 25);
     x.textAlign = 'left'; x.fillStyle = '#efe7dc';
     try { x.fontStretch = 'condensed'; } catch (e) {}
     x.font = '800 132px Archivo, "Arial Narrow", sans-serif';
@@ -847,12 +837,13 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
 
   // ---------- HUD
   var introRow = document.querySelector('.intro-row'), tc = $('tc'), playhead = $('playhead'), cue = $('cue'), now = $('now'), nowT = $('now-title'), nowM = $('now-meta'), scriptsEls = document.querySelectorAll('.scripts span');
-  var shown = -1;
+  var shown = -1, totop = $('totop');
   function hud() {
     var frames24 = Math.round(st.p * 150 * 24);
     tc.textContent = 'TC 00:' + pad(Math.floor(frames24 / 1440)) + ':' + pad(Math.floor(frames24 / 24) % 60) + ':' + pad(frames24 % 24);
     playhead.style.top = 'calc(' + (st.p * 100) + '% - ' + (st.p * 18) + 'px)';
     cue.style.opacity = st.intro > 0.08 ? 0 : 1;
+    totop.classList.toggle('on', scrollY > innerHeight * 0.9);
     introRow.style.opacity = 1 - sstep(0.25, 0.55, st.intro);
   }
   function setNow(i) {
@@ -860,7 +851,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     idx.querySelectorAll('button').forEach(function (b, k) { b.classList.toggle('on', k === i); });
     if (i < 0) { now.classList.add('off'); return; }
     var w = WORK[i];
-    nowM.innerHTML = pad(i + 1) + ' / ' + pad(WORK.length) + ' · ' + esc(w.kind) + (w.ph ? ' <span class="ph">Placeholder</span>' : '');
+    nowM.innerHTML = pad(i + 1) + ' / ' + pad(WORK.length) + ' · ' + esc(w.kind);
     nowT.textContent = w.title + ' ' + w.sub;
     now.classList.remove('off');
     if (window.gsap && !reduce) gsap.fromTo(nowT, { yPercent: 40, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.7, ease: 'power3.out' });
@@ -1092,12 +1083,6 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   // ---------- Small things
   function tick() { try { $('clock').textContent = 'Dubai ' + new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Dubai', hour: '2-digit', minute: '2-digit' }).format(new Date()); } catch (e) {} }
   tick(); setInterval(tick, 20000);
-  var cb = $('copy-email');
-  cb.onclick = function () {
-    var el = $('email');
-    function sel() { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); cb.textContent = 'Selected'; }
-    try { navigator.clipboard.writeText(el.textContent).then(function () { cb.textContent = 'Copied'; setTimeout(function () { cb.textContent = 'Copy address'; }, 1600); }, sel); } catch (e) { sel(); }
-  };
 
   requestAnimationFrame(frame);
 })();
