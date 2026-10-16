@@ -943,16 +943,27 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   }
   function liqStart() { if (!liqOn) { liqOn = true; requestAnimationFrame(liquid); } }
   function setHot(d, on) { if (on && d.p < 0.9) return; if (d.li.classList.contains('hot') === on) return; d.li.classList.toggle('hot', on); liqStart(); }
-  dev.forEach(function (d) {
-    if (fine) {
-      d.li.addEventListener('pointerenter', function () { setHot(d, true); });
-      d.li.addEventListener('pointerleave', function () { setHot(d, false); });
-    } else {
-      d.li.addEventListener('click', function () { d.tap = !d.tap; setHot(d, d.tap); });
-    }
-  });
+  var hoverSync = function () {};
+  function devAt(x, y) {
+    for (var i = 0; i < dev.length; i++) { var r = dev[i].li.getBoundingClientRect(); if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return dev[i]; }
+    return null;
+  }
+  if (fine) {
+    var hov = null, px = -1, py = -1;
+    hoverSync = function () {
+      var d = px < 0 ? null : devAt(px, py);
+      if (d === hov) return;
+      if (hov) setHot(hov, false);
+      hov = d; if (d) setHot(d, true);
+    };
+    addEventListener('pointermove', function (e) { px = e.clientX; py = e.clientY; hoverSync(); }, { passive: true });
+    document.addEventListener('mouseleave', function () { if (hov) { setHot(hov, false); hov = null; } });
+  } else {
+    addEventListener('click', function (e) { var d = devAt(e.clientX, e.clientY); if (d) { d.tap = !d.tap; setHot(d, d.tap); } });
+  }
   function develop() {
     var H = innerHeight;
+    hoverSync();
     dev.forEach(function (d) {
       var r = d.li.getBoundingClientRect();
       if (r.bottom < -50 || r.top > H + 50) { if (!fine && d.li.classList.contains('hot')) setHot(d, false); return; }
