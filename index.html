@@ -158,11 +158,6 @@ main a, main button { pointer-events: auto; }
 .onset figure { margin: 0; }
 .onset .ph-wrap { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: #0d0c0a; border: 1px solid var(--rule); }
 .onset img { display: block; width: 100%; height: 100%; object-fit: cover; filter: brightness(0); transform: scale(1.06); will-change: filter, transform; }
-.onset .pic { position: absolute; inset: 0; }
-.onset img.hot { position: absolute; inset: 0; opacity: 0; transition: opacity .45s ease-out; filter: url(#tone); transform: none; will-change: opacity; pointer-events: none; }
-.onset li.hot img.hot { opacity: 1; }
-.onset li.hot .pic { filter: url(#liquid); transform: scale(1.05); }
-@media (hover: hover) and (pointer: fine) { .onset .ph-wrap { cursor: pointer; } }
 .onset canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .onset figcaption { margin-top: 10px; display: flex; justify-content: space-between; gap: 10px; }
 .facts { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
@@ -377,21 +372,6 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   <img class="lg" id="player-logo" alt="" hidden>
   <div class="screen" id="screen"></div>
 </div>
-
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-  <filter id="tone" color-interpolation-filters="sRGB">
-    <feColorMatrix type="matrix" values="0.3 0.59 0.11 0 0  0.3 0.59 0.11 0 0  0.3 0.59 0.11 0 0  0 0 0 1 0"/>
-    <feComponentTransfer>
-      <feFuncR type="table" tableValues="0.1 0.55 1 1"/>
-      <feFuncG type="table" tableValues="0.05 0.2 0.4 0.88"/>
-      <feFuncB type="table" tableValues="0.25 0.6 0.55 0.55"/>
-    </feComponentTransfer>
-  </filter>
-  <filter id="liquid" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
-    <feTurbulence id="liq-turb" type="fractalNoise" baseFrequency="0.011 0.016" numOctaves="1" seed="3" result="n"/>
-    <feDisplacementMap id="liq-map" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-</svg>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -919,10 +899,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   var dev = [].map.call(document.querySelectorAll('#onset li'), function (li, k) {
     var cv = li.querySelector('canvas'), n = small ? 1500 : 2600, g = [];
     for (var i = 0; i < n; i++) g.push({ x: Math.random(), y: Math.random(), r: 0.7 + Math.random() * 1.6, s: 0.6 + Math.random() * 0.8, w: Math.random(), a: 0.55 + Math.random() * 0.45 });
-    var base = li.querySelector('img'), pic = document.createElement('div'), hot = base.cloneNode();
-    pic.className = 'pic'; base.parentNode.insertBefore(pic, base); pic.appendChild(base);
-    hot.className = 'hot'; hot.alt = ''; hot.setAttribute('aria-hidden', 'true'); hot.removeAttribute('loading'); pic.appendChild(hot);
-    return { li: li, img: base, cv: cv, cx: cv.getContext('2d'), g: g, p: -1, k: k, w: 0, h: 0 };
+    return { li: li, img: li.querySelector('img'), cv: cv, cx: cv.getContext('2d'), g: g, p: -1, k: k, w: 0, h: 0 };
   });
   function devSize(d) {
     var r = d.cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
@@ -930,50 +907,17 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     d.cx.setTransform(dpr, 0, 0, dpr, 0, 0); d.p = -1;
   }
   dev.forEach(devSize); addEventListener('resize', function () { dev.forEach(devSize); });
-  var liqTurb = $('liq-turb'), liqMap = $('liq-map'), liqS = 0, liqT = 0, liqOn = false;
-  function liquid(t) {
-    var on = dev.some(function (d) { return d.li.classList.contains('hot'); });
-    liqT = on && !reduce ? 24 : 0;
-    liqS += (liqT - liqS) * 0.1;
-    if (liqS < 0.3 && !liqT) { liqS = 0; liqOn = false; return; }
-    liqMap.setAttribute('scale', liqS.toFixed(2));
-    var k = t / 1000;
-    liqTurb.setAttribute('baseFrequency', (0.011 + Math.sin(k * 0.9) * 0.003).toFixed(4) + ' ' + (0.016 + Math.cos(k * 0.7) * 0.004).toFixed(4));
-    requestAnimationFrame(liquid);
-  }
-  function liqStart() { if (!liqOn) { liqOn = true; requestAnimationFrame(liquid); } }
-  function setHot(d, on) { if (on && d.p < 0.9) return; if (d.li.classList.contains('hot') === on) return; d.li.classList.toggle('hot', on); liqStart(); }
-  var hoverSync = function () {};
-  function devAt(x, y) {
-    for (var i = 0; i < dev.length; i++) { var r = dev[i].li.getBoundingClientRect(); if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return dev[i]; }
-    return null;
-  }
-  if (fine) {
-    var hov = null, px = -1, py = -1;
-    hoverSync = function () {
-      var d = px < 0 ? null : devAt(px, py);
-      if (d === hov) return;
-      if (hov) setHot(hov, false);
-      hov = d; if (d) setHot(d, true);
-    };
-    addEventListener('pointermove', function (e) { px = e.clientX; py = e.clientY; hoverSync(); }, { passive: true });
-    document.addEventListener('mouseleave', function () { if (hov) { setHot(hov, false); hov = null; } });
-  } else {
-    addEventListener('click', function (e) { var d = devAt(e.clientX, e.clientY); if (d) { d.tap = !d.tap; setHot(d, d.tap); } });
-  }
   function develop() {
     var H = innerHeight;
-    hoverSync();
     dev.forEach(function (d) {
       var r = d.li.getBoundingClientRect();
-      if (r.bottom < -50 || r.top > H + 50) { if (!fine && d.li.classList.contains('hot')) setHot(d, false); return; }
-      if (!fine && !d.tap) { var m = (r.top + r.bottom) / 2; setHot(d, m > H * 0.3 && m < H * 0.7); }
+      if (r.bottom < -50 || r.top > H + 50) return;
       // 0 when the frame's top reaches the bottom of the screen, 1 once it is well up; frames in a row follow one another
       var raw = reduce ? 1 : clamp((H * 0.98 - r.top) / (H * 0.62) - (small ? 0 : d.k % 2 * 0.08), 0, 1);
       var p = Math.round(raw * 400) / 400;
       if (p === d.p) return; d.p = p;
       var dv = sstep(0.25, 1, p);
-      d.img.style.filter = 'brightness(' + (0.08 + 0.92 * dv).toFixed(3) + ') contrast(' + (1.25 - 0.25 * dv).toFixed(3) + ') grayscale(1) blur(' + ((1 - dv) * 6).toFixed(2) + 'px)';
+      d.img.style.filter = 'brightness(' + (0.08 + 0.92 * dv).toFixed(3) + ') contrast(' + (1.25 - 0.25 * dv).toFixed(3) + ') sepia(' + (0.5 * (1 - dv)).toFixed(3) + ') saturate(1.25) blur(' + ((1 - dv) * 6).toFixed(2) + 'px)';
       d.img.style.transform = 'scale(' + (1.06 - 0.06 * dv).toFixed(4) + ')';
       var c = d.cx, w = d.w, h = d.h, part = sstep(0, 0.85, p);
       c.clearRect(0, 0, w, h);
