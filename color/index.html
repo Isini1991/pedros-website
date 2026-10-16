@@ -231,6 +231,14 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   .grain, .cue .line::after { animation: none; }
   .aperture.boot, .ap-ui.boot { animation-delay: 1s; }
 }
+.lg[hidden] { display: none; }
+.lg { display: block; width: auto; filter: brightness(0) invert(1); }
+.reel-index .lg { height: 22px; max-width: 92px; object-fit: contain; align-self: center; opacity: .55; }
+.reel-index button.on .lg { opacity: 1; }
+.now .lg { height: 36px; max-width: 160px; object-fit: contain; justify-self: start; margin-bottom: 6px; }
+.now.off .lg { visibility: hidden; }
+.player .lg { position: absolute; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); left: var(--gr); height: 30px; max-width: 150px; object-fit: contain; }
+@media (max-width: 759px) { .now .lg { height: 28px; max-width: 130px; } .player .lg { height: 24px; max-width: 110px; } }
 </style>
 </head>
 <body>
@@ -280,6 +288,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
       <span class="hint mono dim" id="hint">The reel · click a frame to play</span>
       <div class="now off" id="now" aria-live="polite">
         <span class="mono dim" id="now-meta">01 / 06 · Teaser</span>
+        <img class="lg" id="now-logo" alt="" hidden>
         <span class="t" id="now-title">CEER</span>
         <button class="now-play mono" type="button" id="now-play">▶ Play film</button>
       </div>
@@ -361,6 +370,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
 
 <div class="player" id="player" hidden role="dialog" aria-modal="true" aria-label="Video player">
   <button class="close mono" type="button" id="player-close">Close ✕</button>
+  <img class="lg" id="player-logo" alt="" hidden>
   <div class="screen" id="screen"></div>
 </div>
 
@@ -376,11 +386,11 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   var V = '../videos/';
   var WORK = [
     { title: 'CEER', sub: 'Teaser', kind: 'Teaser', video: V + 'ceer-teaser.mp4', poster: V + 'ceer-teaser-poster.jpg', c: ['#ff7a1a', '#3a0f2e'], gold: true },
-    { title: 'BEEAH', sub: 'Film', kind: 'Film', video: V + 'beeah.mp4', poster: V + 'beeah-poster.jpg', c: ['#e0457b', '#2a0d2e'] },
+    { title: 'BEEAH', logo: '../logos/beeah.svg', sub: 'Film', kind: 'Film', video: V + 'beeah.mp4', poster: V + 'beeah-poster.jpg', c: ['#e0457b', '#2a0d2e'] },
     { title: 'Kingdom of Honey', sub: 'Foodsphere', kind: 'Film', video: V + 'foodsphere-kingdom-of-honey.mp4', poster: V + 'foodsphere-kingdom-of-honey-poster.jpg', c: ['#f2b01e', '#2d1405'] },
-    { title: 'Zayed Prize', sub: 'Sustainability Prize', kind: 'Film', video: V + 'zayed-sustainability-prize.mp4', poster: V + 'zayed-sustainability-prize-poster.jpg', c: ['#12c4b8', '#06222e'] },
-    { title: 'Pepsi', sub: 'Summer Promo', kind: 'Commercial', video: V + 'pepsi-summer-promo.mp4', poster: V + 'pepsi-summer-promo-poster.jpg', c: ['#3d6bff', '#0a0f33'] },
-    { title: 'Wendy\u2019s', sub: 'Biggie Meal', kind: 'Commercial', video: V + 'wendys-biggie-meal.mp4', poster: V + 'wendys-biggie-meal-poster.jpg', c: ['#ff4a3d', '#33091a'] }
+    { title: 'Zayed Prize', logo: '../logos/zayed-sustainability-prize.svg', sub: 'Sustainability Prize', kind: 'Film', video: V + 'zayed-sustainability-prize.mp4', poster: V + 'zayed-sustainability-prize-poster.jpg', c: ['#12c4b8', '#06222e'] },
+    { title: 'Pepsi', logo: '../logos/pepsi.svg', sub: 'Summer Promo', kind: 'Commercial', video: V + 'pepsi-summer-promo.mp4', poster: V + 'pepsi-summer-promo-poster.jpg', c: ['#3d6bff', '#0a0f33'] },
+    { title: 'Wendy\u2019s', logo: '../logos/wendys.svg', sub: 'Biggie Meal', kind: 'Commercial', video: V + 'wendys-biggie-meal.mp4', poster: V + 'wendys-biggie-meal-poster.jpg', c: ['#ff4a3d', '#33091a'] }
   ];
   var SCRIPTS = [
     { text: 'Պետրոս', font: '"Noto Sans Armenian"', w: 700 },
@@ -405,6 +415,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     if (w.video) screen.innerHTML = '<video src="' + esc(w.video) + '" poster="' + esc(w.poster || '') + '" controls autoplay playsinline preload="metadata" title="' + esc(name) + '"></video>';
     else if (w.vimeo) screen.innerHTML = '<iframe src="https://player.vimeo.com/video/' + esc(w.vimeo) + '?autoplay=1&title=0&byline=0&portrait=0&dnt=1" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="' + esc(name) + '"></iframe>';
     else screen.innerHTML = '<div class="soon"><span class="mono dim">' + esc(name) + '</span><b>Film coming soon</b><a class="mono" href="' + VIMEO + '" target="_blank" rel="noopener">Watch on Vimeo ↗</a></div>';
+    var pl = $('player-logo'); if (w.logo) { pl.src = w.logo; pl.hidden = false; } else pl.hidden = true;
     player.hidden = false; $('player-close').focus();
     if (lenis) lenis.stop();
   }
@@ -428,7 +439,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   var idx = $('reel-index');
   WORK.forEach(function (w, i) {
     var li = document.createElement('li');
-    li.innerHTML = '<button type="button" data-i="' + i + '" data-cursor="Go"><span class="nm">' + esc(w.title + ' ' + w.sub) + '</span><span class="n mono">' + pad(i + 1) + '</span></button>';
+    li.innerHTML = '<button type="button" data-i="' + i + '" data-cursor="Go">' + (w.logo ? '<img class="lg" src="' + w.logo + '" alt="" aria-hidden="true">' : '') + '<span class="nm">' + esc(w.title + ' ' + w.sub) + '</span><span class="n mono">' + pad(i + 1) + '</span></button>';
     idx.appendChild(li);
   });
   idx.addEventListener('click', function (e) {
@@ -862,6 +873,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     var w = WORK[i];
     nowM.innerHTML = pad(i + 1) + ' / ' + pad(WORK.length) + ' · ' + esc(w.kind);
     nowT.textContent = w.title + ' ' + w.sub;
+    var nl = $('now-logo'); if (w.logo) { nl.src = w.logo; nl.hidden = false; } else nl.hidden = true;
     now.classList.remove('off');
     if (window.gsap && !reduce) gsap.fromTo(nowT, { yPercent: 40, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.7, ease: 'power3.out' });
   }
