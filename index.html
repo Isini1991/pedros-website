@@ -89,6 +89,11 @@ nav a:hover::after { transform: scaleX(1); transform-origin: left; }
 @media not ((hover: hover) and (pointer: fine)) { .cursor { display: none; } }
 
 /* Chapters: words only, the stage does the rest */
+.blobs { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; mix-blend-mode: screen; }
+.blobs i { position: absolute; left: 0; top: 0; width: 70vmax; height: 70vmax; margin: -35vmax 0 0 -35vmax; border-radius: 50%; opacity: .5; will-change: transform; }
+.blobs i:nth-child(1) { background: radial-gradient(closest-side, rgba(122,42,216,.55), rgba(122,42,216,0)); }
+.blobs i:nth-child(2) { background: radial-gradient(closest-side, rgba(255,61,127,.4), rgba(255,61,127,0)); }
+.blobs i:nth-child(3) { background: radial-gradient(closest-side, rgba(255,171,46,.32), rgba(255,171,46,0)); }
 main { position: relative; z-index: 10; pointer-events: none; }
 main a, main button { pointer-events: auto; }
 .ch { position: relative; padding-left: var(--gl); padding-right: var(--gr); }
@@ -243,6 +248,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
 <body>
 
 <canvas id="gl" aria-hidden="true"></canvas>
+<div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
 
@@ -384,12 +390,12 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   var VIMEO = 'https://vimeo.com/pedroskevorktemizian';
   var V = 'videos/';
   var WORK = [
-    { title: 'CEER', sub: 'Teaser', kind: 'Teaser', video: V + 'ceer-teaser.mp4', poster: V + 'ceer-teaser-poster.jpg', c: ['#ff7a1a', '#3a0f2e'], gold: true },
-    { title: 'BEEAH', logo: 'logos/beeah.svg', sub: 'Film', kind: 'Film', video: V + 'beeah.mp4', poster: V + 'beeah-poster.jpg', c: ['#e0457b', '#2a0d2e'] },
-    { title: 'Kingdom of Honey', sub: 'Foodsphere', kind: 'Film', video: V + 'foodsphere-kingdom-of-honey.mp4', poster: V + 'foodsphere-kingdom-of-honey-poster.jpg', c: ['#f2b01e', '#2d1405'] },
-    { title: 'Zayed Prize', logo: 'logos/zayed-sustainability-prize.svg', sub: 'Sustainability Prize', kind: 'Film', video: V + 'zayed-sustainability-prize.mp4', poster: V + 'zayed-sustainability-prize-poster.jpg', c: ['#12c4b8', '#06222e'] },
-    { title: 'Pepsi', logo: 'logos/pepsi.svg', sub: 'Summer Promo', kind: 'Commercial', video: V + 'pepsi-summer-promo.mp4', poster: V + 'pepsi-summer-promo-poster.jpg', c: ['#3d6bff', '#0a0f33'] },
-    { title: 'Wendy\u2019s', logo: 'logos/wendys.svg', sub: 'Biggie Meal', kind: 'Commercial', video: V + 'wendys-biggie-meal.mp4', poster: V + 'wendys-biggie-meal-poster.jpg', c: ['#ff4a3d', '#33091a'] }
+    { title: 'CEER', brand: '#ff8a2a', sub: 'Teaser', kind: 'Teaser', video: V + 'ceer-teaser.mp4', poster: V + 'ceer-teaser-poster.jpg', c: ['#ff7a1a', '#3a0f2e'], gold: true },
+    { title: 'BEEAH', brand: '#19b87a', logo: 'logos/beeah.svg', sub: 'Film', kind: 'Film', video: V + 'beeah.mp4', poster: V + 'beeah-poster.jpg', c: ['#e0457b', '#2a0d2e'] },
+    { title: 'Kingdom of Honey', brand: '#f2b01e', sub: 'Foodsphere', kind: 'Film', video: V + 'foodsphere-kingdom-of-honey.mp4', poster: V + 'foodsphere-kingdom-of-honey-poster.jpg', c: ['#f2b01e', '#2d1405'] },
+    { title: 'Zayed Prize', brand: '#12c4b8', logo: 'logos/zayed-sustainability-prize.svg', sub: 'Sustainability Prize', kind: 'Film', video: V + 'zayed-sustainability-prize.mp4', poster: V + 'zayed-sustainability-prize-poster.jpg', c: ['#12c4b8', '#06222e'] },
+    { title: 'Pepsi', brand: '#2f6bff', logo: 'logos/pepsi.svg', sub: 'Summer Promo', kind: 'Commercial', video: V + 'pepsi-summer-promo.mp4', poster: V + 'pepsi-summer-promo-poster.jpg', c: ['#3d6bff', '#0a0f33'] },
+    { title: 'Wendy\u2019s', brand: '#e2203d', logo: 'logos/wendys.svg', sub: 'Biggie Meal', kind: 'Commercial', video: V + 'wendys-biggie-meal.mp4', poster: V + 'wendys-biggie-meal-poster.jpg', c: ['#ff4a3d', '#33091a'] }
   ];
   var SCRIPTS = [
     { text: 'Պետրոս', font: '"Noto Sans Armenian"', w: 700 },
@@ -499,6 +505,8 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   });
 
   // ---------- WebGL
+  var blobEls = document.querySelectorAll('.blobs i');
+  var tintCol = null, tintTarget = null, tintAmt = 0, tintAmtT = 0, bgCol = null;
   var trophy, trophyLater, orbit, gl = false, renderer, scene, camera, points, pMat, frames = [], feature, raycaster, mouseN = { x: 0, y: 0 }, pushOn = false, hovered = null;
   var N = small ? 6500 : 15000;
   try {
@@ -537,7 +545,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     var t = new THREE.CanvasTexture(cv); t.anisotropy = 4; t.minFilter = THREE.LinearFilter;
     if (w.poster || w.vimeo) {
       var im = new Image(); im.crossOrigin = 'anonymous';
-      im.onload = function () { var c2 = cv.getContext('2d'); c2.drawImage(im, 0, 0, 1024, 576); c2.fillStyle = 'rgba(0,0,0,.25)'; c2.fillRect(0, 0, 1024, 576); t.needsUpdate = true; };
+      im.onload = function () { var c2 = cv.getContext('2d'); c2.filter = 'saturate(1.35) contrast(1.1)'; c2.drawImage(im, 0, 0, 1024, 576); c2.filter = 'none'; c2.fillStyle = 'rgba(0,0,0,.2)'; c2.fillRect(0, 0, 1024, 576); t.needsUpdate = true; };
       im.src = w.poster || ('https://vumbnail.com/' + encodeURIComponent(w.vimeo) + '_large.jpg');
     }
     return t;
@@ -641,7 +649,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     '  gl_Position = projectionMatrix * mv;',
     '}'].join('\n');
   var P_FS = [
-    'uniform float uAlpha; varying float vR; varying float vH;',
+    'uniform float uAlpha; uniform vec3 uTint; uniform float uTintAmt; varying float vR; varying float vH;',
     'void main(){',
     '  float d = length(gl_PointCoord - 0.5); if (d > 0.5) discard;',
     '  float a = smoothstep(0.5, 0.0, d) * uAlpha * (0.35 + 0.65 * vR);',
@@ -649,13 +657,14 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     '  vec3 teal = vec3(0.10, 0.82, 0.77), mag = vec3(1.0, 0.24, 0.5);',
     '  vec3 col = mix(mix(sand, gold, smoothstep(0.0, 0.4, vR)), mix(mag, teal, smoothstep(0.7, 1.0, vR)), smoothstep(0.35, 0.8, vR) * 0.9);',
     '  col = mix(col, sun, vH);',
+    '  col = mix(col, uTint * (0.55 + 0.6 * vR), uTintAmt * 0.85 * (1.0 - vH));',
     '  gl_FragColor = vec4(col, a * (1.0 + vH));',
     '}'].join('\n');
 
   var geo, A, B, S0 = 0, mixT = 1, curScript = -1, sets = [], fontsReady = false;
   if (gl) {
     renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.75));
-    renderer.setClearColor(0x0a0618, 1);
+    renderer.setClearColor(0x0a0618, 1); tintCol = new THREE.Color(0xffffff); tintTarget = new THREE.Color(0xffffff); bgCol = new THREE.Color(0x0a0618);
     scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0x0a0618, 6, 30);
     camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 120);
@@ -675,7 +684,7 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
     geo.setAttribute('aH', new THREE.BufferAttribute(horizonSet(N), 3));
     geo.setAttribute('aR', new THREE.BufferAttribute(rnd, 1));
     pMat = new THREE.ShaderMaterial({
-      uniforms: { uT: { value: 0 }, uStorm: { value: 1 }, uHor: { value: 0 }, uTime: { value: 0 }, uSize: { value: (small ? 2.6 : 2.2) * renderer.getPixelRatio() }, uMouse: { value: new THREE.Vector2(99, 99) }, uPush: { value: 1 }, uAlpha: { value: 1 } },
+      uniforms: { uTint: { value: new THREE.Color(0xffffff) }, uTintAmt: { value: 0 }, uT: { value: 0 }, uStorm: { value: 1 }, uHor: { value: 0 }, uTime: { value: 0 }, uSize: { value: (small ? 2.6 : 2.2) * renderer.getPixelRatio() }, uMouse: { value: new THREE.Vector2(99, 99) }, uPush: { value: 1 }, uAlpha: { value: 1 } },
       vertexShader: P_VS, fragmentShader: P_FS, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false
     });
     points = new THREE.Points(geo, pMat);
@@ -960,6 +969,11 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
   function frame() {
     var dt = Math.min(clock.getDelta ? clock.getDelta() : 0.016, 0.05); time += dt;
     readScroll(); hud();
+    var bw = innerWidth, bh = innerHeight, sy = scrollY / Math.max(1, document.documentElement.scrollHeight - bh);
+    for (var bi = 0; bi < blobEls.length; bi++) {
+      var ph = bi * 2.1, bx = bw * (0.5 + 0.42 * Math.sin(time * 0.05 + ph + sy * 5.2)), by = bh * (0.5 + 0.4 * Math.cos(time * 0.04 + ph * 1.3 + sy * 3.6));
+      blobEls[bi].style.transform = 'translate3d(' + bx.toFixed(1) + 'px,' + by.toFixed(1) + 'px,0)';
+    }
     cx = lerp(cx, mx, 0.3); cy = lerp(cy, my, 0.3);
     cur.style.transform = 'translate(' + cx + 'px,' + cy + 'px)';
     develop();
@@ -981,6 +995,13 @@ html.no-gl .reel-index .nm { font-size: 1.6rem; }
       u.uStorm.value = lerp(u.uStorm.value, storm, fontsReady ? 0.08 : 1);
       u.uHor.value = sstep(0.0, 1.0, st.outro);
       u.uPush.value = lerp(u.uPush.value, (pushOn || touchOn) ? 1 - u.uStorm.value : 0, 0.1);
+      var ti = hovered && fine ? frames.indexOf(hovered) : shown;
+      if (ti >= 0 && ti < WORK.length && st.ceer <= 0) { tintTarget.set(WORK[ti].brand); tintAmtT = 1; } else tintAmtT = 0;
+      tintAmt = lerp(tintAmt, tintAmtT, 0.05);
+      if (tintAmtT > 0) tintCol.lerp(tintTarget, 0.06);
+      u.uTint.value.copy(tintCol); u.uTintAmt.value = tintAmt;
+      bgCol.setRGB(0.039 + tintCol.r * 0.2 * tintAmt, 0.024 + tintCol.g * 0.2 * tintAmt, 0.094 + tintCol.b * 0.2 * tintAmt);
+      renderer.setClearColor(bgCol, 1); scene.fog.color.copy(bgCol);
       var inReel = st.intro >= 1 ? 1 : st.intro;
       u.uAlpha.value = lerp(1, 0.4, sstep(0.6, 1, inReel)) * (1 - 0.6 * st.ceer * (1 - st.outro)) * (1 - 0.5 * st.award * (1 - st.outro)) + (small ? 0.35 : 0.6) * st.outro;
       var vh = 2 * Math.tan(THREE.MathUtils.degToRad(22.5)) * 10;
